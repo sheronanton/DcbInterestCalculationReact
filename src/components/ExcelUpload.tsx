@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SERVICEURL from "../util/SERVICEURL";
 
 type ResultEntry = {
   month: number;
@@ -8,6 +9,7 @@ type ResultEntry = {
   closingBalance: number;
   overdueAmount: number;
   interest: number;
+  runningInterest: number;
 };
 
 type UploadResponse = {
@@ -32,9 +34,10 @@ const monthNames = [
 ];
 
 const ExcelUpload: React.FC = () => {
-  let type = 1; // 1 = development, 2 = production
-
-  const BASE_URL = type === 1 ? "http://localhost:8080/intCalc/" : "/intCalc/";
+  const BASE_URL = SERVICEURL.BASE_URL;
+  // type === 1
+  //   ? "http://localhost:8080/intCalc/" // dev: hit backend directly
+  //   : "/intCalc/";
 
   const [mode, setMode] = useState<"localbody" | "private">("localbody");
   const [file, setFile] = useState<File | null>(null);
@@ -97,7 +100,7 @@ const ExcelUpload: React.FC = () => {
         fetchData(file, mode).finally(() => {
           setLoading(false);
         });
-      }, 1000); // wait for 1 second before fetching data
+      }, 0); // wait for 1 second before fetching data
 
       return () => clearTimeout(timer); // clear timeout if mode changes quickly
     }
@@ -170,43 +173,74 @@ const ExcelUpload: React.FC = () => {
             >
               Mode: {mode === "localbody" ? "Local Body" : "Private"}
             </div>
-            <table className="calculator-table">
-              <thead>
-                <tr>
-                  <th>Year</th>
-                  <th>Month</th>
-                  <th>Opening Balance (In Rs/-)</th>
-                  <th>Demand (In Rs/-)</th>
-                  <th>Overdue Amount (In Rs/-)</th>
-                  <th>Closing Balance (In Rs/-)</th>
-                  <th>Interest (In Rs/-)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((row, idx) => (
-                  <tr key={idx}>
-                    <td>{row.year}</td>
-                    <td>{monthNames[row.month - 1]}</td>
-                    <td>{row.openingBalance.toLocaleString("en-IN")}</td>
-                    <td>{row.demand.toLocaleString("en-IN")}</td>
-                    <td>{row.overdueAmount.toLocaleString("en-IN")}</td>
-                    <td>{row.closingBalance.toLocaleString("en-IN")}</td>
-                    <td
-                      title={
-                        row.overdueAmount > 0
-                          ? mode === "private"
-                            ? `Interest = Overdue Amount (${row.overdueAmount}) x 2% = ${row.interest}`
-                            : `Interest = Overdue Amount (${row.overdueAmount}) x 0.5% = ${row.interest}`
-                          : "No interest (less than X months overdue)"
-                      }
-                      style={{ cursor: "help" }}
-                    >
-                      {row.interest.toLocaleString("en-IN")}
-                    </td>
+
+            {/* Scrollable table wrapper */}
+            <div className="table-scroll-container">
+              <table className="calculator-table">
+                {/* table content remains exactly the same */}
+                <thead>
+                  <tr>
+                    <th>Year</th>
+                    <th>Month</th>
+                    <th>Opening Balance (In Rs/-)</th>
+                    <th>Demand (In Rs/-)</th>
+                    <th>Overdue Amount (In Rs/-)</th>
+                    <th>WC Closing Balance (In Rs/-)</th>
+                    <th>Interest (In Rs/-)</th>
+                    <th>INT Closing Balance (In Rs/-)</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.map((row, idx) => (
+                    <tr key={idx}>
+                      <td>{row.year}</td>
+                      <td>{monthNames[row.month - 1]}</td>
+                      <td>{row.openingBalance.toLocaleString("en-IN")}</td>
+                      <td>{row.demand.toLocaleString("en-IN")}</td>
+                      <td>{row.overdueAmount.toLocaleString("en-IN")}</td>
+                      <td
+                        style={
+                          idx === data.length - 1
+                            ? {
+                                backgroundColor: "#245e8dff", // highlight color
+                                fontWeight: "bold",
+                                color: "#fff",
+                              }
+                            : {}
+                        }
+                      >
+                        {row.closingBalance.toLocaleString("en-IN")}
+                      </td>
+                      <td
+                        title={
+                          row.overdueAmount > 0
+                            ? mode === "private"
+                              ? `Interest = Overdue Amount (${row.overdueAmount}) x 2% = ${row.interest}`
+                              : `Interest = Overdue Amount (${row.overdueAmount}) x 0.5% = ${row.interest}`
+                            : "No interest (less than X months overdue)"
+                        }
+                        style={{ cursor: "help" }}
+                      >
+                        {row.interest.toLocaleString("en-IN")}
+                      </td>
+                      <td
+                        style={
+                          idx === data.length - 1
+                            ? {
+                                backgroundColor: "#245e8dff", // highlight color
+                                fontWeight: "bold",
+                                color: "#fff",
+                              }
+                            : {}
+                        }
+                      >
+                        {row.runningInterest.toLocaleString("en-IN")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <div className="calculator-totals">
               Total WC Closing Balance: Rs{" "}
@@ -215,16 +249,7 @@ const ExcelUpload: React.FC = () => {
               Total Interest Closing Balance: Rs{" "}
               {totals.totalInterest.toLocaleString("en-IN")}/-
             </div>
-            <button
-              className="calculator-btn"
-              onClick={handleDownload}
-              style={{
-                marginTop: 16,
-                padding: "10px 20px",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-            >
+            <button className="calculator-btn" onClick={handleDownload}>
               Download as Excel
             </button>
           </>
