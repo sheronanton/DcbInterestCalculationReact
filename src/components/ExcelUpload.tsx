@@ -108,6 +108,8 @@ const ExcelUpload: React.FC = () => {
   }, [mode]);
 
   // Download as Excel
+  // Download as Excel
+
   const handleDownload = async () => {
     if (!responseData) return;
 
@@ -135,6 +137,7 @@ const ExcelUpload: React.FC = () => {
       alert(err instanceof Error ? err.message : "Download failed");
     }
   };
+  // Download as Excel
 
   return (
     <>

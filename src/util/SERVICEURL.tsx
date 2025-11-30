@@ -16,3 +16,4 @@ const SERVICEURL = {
 export default SERVICEURL;
 
 export type ServiceUrlConfig = typeof SERVICEURL;
+// Download as Excel
