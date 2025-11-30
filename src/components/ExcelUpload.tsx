@@ -62,7 +62,7 @@ const ExcelUpload: React.FC = () => {
     formData.append("mode", currentMode);
 
     try {
-      const response = await fetch(`${BASE_URL}api/excel/upload`, {
+      const response = await fetch(`${BASE_URL}excel/upload`, {
         method: "POST",
         body: formData,
       });
@@ -114,7 +114,7 @@ const ExcelUpload: React.FC = () => {
     if (!responseData) return;
 
     try {
-      const response = await fetch(`${BASE_URL}api/excel/download`, {
+      const response = await fetch(`${BASE_URL}excel/download`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -170,8 +170,10 @@ const ExcelUpload: React.FC = () => {
             <div
               style={{
                 textAlign: "center",
-                marginBottom: "8px",
-                fontWeight: "600",
+                marginBottom: "12px",
+                fontWeight: 600,
+                fontSize: "14px",
+                color: "#1f2937",
               }}
             >
               Mode: {mode === "localbody" ? "Local Body" : "Private"}
